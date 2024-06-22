@@ -6,10 +6,10 @@ It is not meant to be published online and used as an enterprise tool.
 
 ## Run
 
-To run shiny invoice you need to clone this repository and install the dependencies with (it is suggested to use a venv)
+To run `shiny-invoice` you need install it with:
 
 ```bash
-pip install -e .
+pip install shiny-invoice
 ```
 
 Once `shiny-invoice` is installed you need to create configuration file. 
@@ -54,6 +54,13 @@ Once everything is set up you can run `shiny-invoice` with:
 
 ```bash
 shiny-invoice run --config config.yaml 
+```
+
+More information you can find with
+
+```bash
+shiny-invoice --help
+shiny-invoice run --help 
 ```
 
 ## Workflow
