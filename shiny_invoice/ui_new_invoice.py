@@ -45,8 +45,7 @@ def new_invoice_ui(config):
             ui.download_button(id="download_button", label="Download Invoice", width="100%"),
         ),
         ui.card(
-            ui.card_header("Rendered Invoice"),
-            ui.output_ui(id="rendered_invoice_ui", width="100%")
+            ui.card_header("Rendered Invoice"), ui.output_ui(id="rendered_invoice_ui", width="100%")
         ),
     )
 

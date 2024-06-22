@@ -47,6 +47,7 @@ def existing_invoices_ui():
 @module.server
 def existing_invoices_server(input, output, session, config):
     """Contains the Shiny Server for existing invoices"""
+
     @reactive.calc
     def get_filtered_invoices() -> pd.DataFrame | str:
         """Retrieve all invoices from the configured directories and parse them into a DataFrame.
