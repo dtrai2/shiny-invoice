@@ -1,4 +1,5 @@
 """This module contains the ui and the server for creating a new invoice."""
+
 import datetime
 import io
 from pathlib import Path
@@ -10,6 +11,7 @@ from shiny import module, ui, render, reactive
 
 @module.ui
 def new_invoice_ui(config):
+    """Defines the shiny ui for new invoices"""
     invoice_defaults = config.get("invoice_defaults")
 
     return ui.layout_column_wrap(
@@ -18,13 +20,15 @@ def new_invoice_ui(config):
             ui.input_text(id="invoice_number", label="Invoice Number", value="1", width="100%"),
             ui.input_date(id="created_at_date", label="Created At", width="100%"),
             ui.output_ui(id="due_date_ui", width="100%"),
-            ui.input_text(id="introduction", label="Introduction", value="Dear Sir or Madam,", width="100%"),
+            ui.input_text(
+                id="introduction", label="Introduction", value="Dear Sir or Madam,", width="100%"
+            ),
             ui.input_text_area(
                 id="recipient_address",
                 label="Recipient Address",
                 value=invoice_defaults.get("recipient"),
                 rows=3,
-                width="100%"
+                width="100%",
             ),
             ui.tooltip(
                 ui.input_text_area(
@@ -33,17 +37,16 @@ def new_invoice_ui(config):
                     value=invoice_defaults.get("items"),
                     rows=6,
                     width="100%",
-                    spellcheck=True
+                    spellcheck=True,
                 ),
-                "Should be in csv format. The last column will be used to calculate the total price."
-                "The values should be before taxes."
+                "Should be in csv format. The last column will be used to calculate the"
+                "total price. The values should be before taxes.",
             ),
-            ui.download_button(id="download_button", label="Download Invoice", width="100%")
+            ui.download_button(id="download_button", label="Download Invoice", width="100%"),
         ),
         ui.card(
-            ui.card_header("Rendered Invoice"),
-            ui.output_ui(id="rendered_invoice_ui", width="100%")
-        )
+            ui.card_header("Rendered Invoice"), ui.output_ui(id="rendered_invoice_ui", width="100%")
+        ),
     )
 
 
@@ -65,7 +68,9 @@ def new_invoice_server(input, output, session, config):
     def calculate_totals():
         items = parse_invoice_items()
         last_column = items.columns[-1]
-        items[last_column] = items[last_column].str.replace(".", "").str.replace("€", "").astype(float)
+        items[last_column] = (
+            items[last_column].str.replace(".", "").str.replace("€", "").astype(float)
+        )
         return items[last_column].sum()
 
     @render.ui
@@ -114,7 +119,7 @@ def new_invoice_server(input, output, session, config):
             "invoice_items": convert_invoice_csv_to_html(),
             "total_net": f"{total_net:n} €",
             "tax": f"{tax:n} €",
-            "total_gross": f"{total_gross:n} €"
+            "total_gross": f"{total_gross:n} €",
         }
         return html_template.substitute(substitutions)
 
