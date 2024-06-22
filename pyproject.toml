@@ -11,7 +11,7 @@ packages = ["shiny_invoice"]
 name = "shiny-invoice"
 description = "Simply manage invoices"
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 readme = "README.md"
 license = { file = "LICENSE" }
 classifiers = [
