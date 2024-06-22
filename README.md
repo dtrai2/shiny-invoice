@@ -72,3 +72,11 @@ Based on that they will be also categorised inside the ui.
 The application does not offer ways to move or change files, this has to be done manually. 
 The filename also needs to follow a specific pattern which is 
 `<CREATED_AT_DATE>-<INVOICE_NUMBER>-<CUSTOMERNAME>.html`
+
+## Impressions
+
+### View of existing invoices
+![existing-invoices.png](docs/existing-invoices.png)
+
+### View of creating a new invoice
+![new-invoice.png](docs/new-invoice.png)
