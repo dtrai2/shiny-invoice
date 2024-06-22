@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["shiny_invoice"]
+
+[tool.setuptools_scm]
+
+[project]
+name = "shiny-invoice"
+description = "Simply manage invoices"
+dynamic = ["version"]
+requires-python = ">=3.10"
+readme = "README.md"
+license = { file = "LICENSE" }
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Office/Business :: Financial :: Accounting",
+]
+keywords = [
+  "invoice",
+  "finance",
+  "accounting",
+]
+
+dependencies = [
+  "shiny",
+  "click",
+  "ruamel.yaml",
+  "pandas"
+]
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "pylint",
+  "pre-commit"
+]
+
+[project.scripts]
+shiny-invoice = "shiny_invoice.shiny_invoice:cli"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
