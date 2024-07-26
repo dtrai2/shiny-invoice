@@ -8,6 +8,7 @@ from shiny import module, ui, render, reactive
 from tinydb import TinyDB, Query
 from tinydb.operations import set
 
+
 @module.ui
 def existing_invoices_ui():
     """Defines the shiny ui for existing invoices"""
@@ -66,7 +67,12 @@ def existing_invoices_server(input, output, session, config):
         df["Created At"] = df["Created At"].apply(lambda x: x.strftime("%d.%m.%Y"))
         df["Due Date"] = df["Due Date"].apply(lambda x: x.strftime("%d.%m.%Y"))
         df["Paid At"] = df["Paid At"].apply(
-            lambda x: datetime.datetime.strptime(x, "%Y-%m-%d").strftime("%d.%m.%Y") if x != "Unpaid" else "Unpaid")
+            lambda x: (
+                datetime.datetime.strptime(x, "%Y-%m-%d").strftime("%d.%m.%Y")
+                if x != "Unpaid"
+                else "Unpaid"
+            )
+        )
         return df
 
     def _filter_invoices(df):
@@ -110,12 +116,14 @@ def existing_invoices_server(input, output, session, config):
             Invoices = Query()
             invoice_id = table_data.iloc[patch.get("row_index")]["Id"]
             parsed_date = datetime.datetime.strptime(patch.get("value"), "%d.%m.%Y")
-            datastore.update(set("paid_at", parsed_date.strftime("%Y-%m-%d")), Invoices.id == invoice_id)
+            datastore.update(
+                set("paid_at", parsed_date.strftime("%Y-%m-%d")), Invoices.id == invoice_id
+            )
         except Exception:
             ui.notification_show(
                 "Error while updating invoice, please only use the date format '%d.%m.%Y'.",
                 type="error",
-                duration=6
+                duration=6,
             )
         return patch.get("value")
 

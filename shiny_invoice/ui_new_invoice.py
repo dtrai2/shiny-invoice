@@ -53,7 +53,6 @@ def new_invoice_ui(config):
 
 @module.server
 def new_invoice_server(input, output, session, config):
-
     datastore = TinyDB(config.get("paths").get("datastore"))
 
     with open(Path(config.get("paths").get("html_template")), "r", encoding="utf8") as file:
@@ -81,8 +80,10 @@ def new_invoice_server(input, output, session, config):
         invoice_ids = [int(invoice.get("Id")) for invoice in datastore.all()]
         next_id = 1
         if invoice_ids:
-            next_id = max(invoice_ids) +1
-        number_ui = ui.input_text(id="invoice_number", label="Invoice Number", value=str(next_id), width="100%")
+            next_id = max(invoice_ids) + 1
+        number_ui = ui.input_text(
+            id="invoice_number", label="Invoice Number", value=str(next_id), width="100%"
+        )
         return number_ui
 
     @render.ui
@@ -112,22 +113,21 @@ def new_invoice_server(input, output, session, config):
     )
     def download_button():
         """Download the currently created invoice"""
-        datastore.insert({
-            "Id": input.invoice_number(),
-            "Created At": str(input.created_at_date()),
-            "Due Date": str(input.due_date()),
-            "Paid At": "Unpaid",
-            "Customer": customer_name(),
-        })
+        datastore.insert(
+            {
+                "Id": input.invoice_number(),
+                "Created At": str(input.created_at_date()),
+                "Due Date": str(input.due_date()),
+                "Paid At": "Unpaid",
+                "Customer": customer_name(),
+            }
+        )
         ui.notification_show(
-            "Reload page to update 'Existing Invoices' view.",
-            type="message",
-            duration=None
+            "Reload page to update 'Existing Invoices' view.", type="message", duration=None
         )
         with io.BytesIO() as buf:
             buf.write(render_invoice().encode("utf8"))
             yield buf.getvalue()
-
 
     @reactive.calc
     def render_invoice():
