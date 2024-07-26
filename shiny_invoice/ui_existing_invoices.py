@@ -46,7 +46,7 @@ def existing_invoices_ui():
 
 
 @module.server
-def existing_invoices_server(input, output, session, config):
+def existing_invoices_server(input, _, __, config):
     """Contains the Shiny Server for existing invoices"""
 
     datastore = TinyDB(config.get("paths").get("datastore"))
@@ -113,13 +113,13 @@ def existing_invoices_server(input, output, session, config):
             )
             return table_data[edited_column].iloc[patch.get("row_index")]
         try:
-            Invoices = Query()
+            query = Query()
             invoice_id = table_data.iloc[patch.get("row_index")]["Id"]
             parsed_date = datetime.datetime.strptime(patch.get("value"), "%d.%m.%Y")
             datastore.update(
-                set("paid_at", parsed_date.strftime("%Y-%m-%d")), Invoices.id == invoice_id
+                set("Paid At", parsed_date.strftime("%Y-%m-%d")), query.Id == invoice_id
             )
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             ui.notification_show(
                 "Error while updating invoice, please only use the date format '%d.%m.%Y'.",
                 type="error",

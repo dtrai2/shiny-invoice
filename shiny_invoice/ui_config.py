@@ -18,7 +18,7 @@ def config_ui():
 
 
 @module.server
-def config_server(input, output, session, config):
+def config_server(_, __, ___, config):
     """Contains the shiny server for the configuration view"""
 
     @render.text

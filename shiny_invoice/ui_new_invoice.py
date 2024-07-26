@@ -52,7 +52,8 @@ def new_invoice_ui(config):
 
 
 @module.server
-def new_invoice_server(input, output, session, config):
+def new_invoice_server(input, _, __, config):
+    """Contains the Shiny Server for creating new invoices"""
     datastore = TinyDB(config.get("paths").get("datastore"))
 
     with open(Path(config.get("paths").get("html_template")), "r", encoding="utf8") as file:
@@ -99,8 +100,8 @@ def new_invoice_server(input, output, session, config):
     @reactive.effect
     @reactive.event(input.invoice_number)
     def already_existing_id_modal():
-        Invoices = Query()
-        already_existing = datastore.search(Invoices.id == input.invoice_number())
+        query = Query()
+        already_existing = datastore.search(query.Id == input.invoice_number())
         if already_existing:
             ui.notification_show(
                 "This invoice already exists. Please choose another invoice number.",
