@@ -1,12 +1,12 @@
 """This module contains the ui and server configurations for the existing invoices."""
 
 import datetime
-import glob
 from pathlib import Path
 
 import pandas as pd
 from shiny import module, ui, render, reactive
-
+from tinydb import TinyDB, Query
+from tinydb.operations import set
 
 @module.ui
 def existing_invoices_ui():
@@ -48,75 +48,78 @@ def existing_invoices_ui():
 def existing_invoices_server(input, output, session, config):
     """Contains the Shiny Server for existing invoices"""
 
+    datastore = TinyDB(config.get("paths").get("datastore"))
+
     @reactive.calc
     def get_filtered_invoices() -> pd.DataFrame | str:
-        """Retrieve all invoices from the configured directories and parse them into a DataFrame.
+        """Retrieve all invoices from the datastore and turn them into a DataFrame.
         The input filters will then be applied to the dataframe such that only the desired results
         will be returned.
         """
-        paid_records, unpaid_records = _get_invoice_records()
-        df = pd.DataFrame.from_records(paid_records + unpaid_records)
+        selected_invoices = datastore.all()
+        for invoice in selected_invoices:
+            invoice["Link"] = ui.a("Download", href=f"{invoice["Id"]}.html", target="_blank")
+        df = pd.DataFrame.from_records(selected_invoices)
         if len(df) == 0:
             return df
-        duplicate_numbers = df[df.duplicated(["Invoice"], keep="last")]
-        if len(duplicate_numbers) > 0:
-            duplicate_ids = ", ".join(duplicate_numbers["Invoice"].to_list())
-            ui.notification_show(
-                f"Found duplicate invoice ids: {duplicate_ids}", type="warning", duration=2
-            )
         df = _filter_invoices(df)
+        df["Created At"] = df["Created At"].apply(lambda x: x.strftime("%d.%m.%Y"))
+        df["Due Date"] = df["Due Date"].apply(lambda x: x.strftime("%d.%m.%Y"))
+        df["Paid At"] = df["Paid At"].apply(
+            lambda x: datetime.datetime.strptime(x, "%Y-%m-%d").strftime("%d.%m.%Y") if x != "Unpaid" else "Unpaid")
         return df
-
-    def _get_invoice_records():
-        root_dir = Path(config.get("paths").get("invoices_root_dir"))
-        paid_dir = root_dir / config.get("paths").get("invoices_dir_paid")
-        unpaid_dir = root_dir / config.get("paths").get("invoices_dir_unpaid")
-        paid_invoices = glob.glob(f"{paid_dir}/**/*.html", recursive=True)
-        unpaid_invoices = glob.glob(f"{unpaid_dir}/**/*.html", recursive=True)
-        paid_records = _create_invoice_records(paid_invoices, status="paid")
-        unpaid_records = _create_invoice_records(unpaid_invoices, status="unpaid")
-        return paid_records, unpaid_records
 
     def _filter_invoices(df):
         if input.invoice_numbers():
-            filtered_invoice_ids = input.invoice_numbers().split(",")
-            df = df.loc[df["Invoice"].isin(filtered_invoice_ids)]
+            filtered_ids = input.invoice_numbers().split(",")
+            df = df.loc[df["Id"].isin(filtered_ids)]
         if input.paid_status():
-            df = df.loc[df["Status"].isin(input.paid_status())]
+            paid, unpaid = pd.DataFrame(), pd.DataFrame()
+            if "paid" in input.paid_status():
+                paid = df.loc[df["Paid At"] != "Unpaid"]
+            if "unpaid" in input.paid_status():
+                unpaid = df.loc[df["Paid At"] == "Unpaid"]
+            df = pd.concat([paid, unpaid])
+        df["Created At"] = pd.to_datetime(df["Created At"]).dt.date
+        df["Due Date"] = pd.to_datetime(df["Due Date"]).dt.date
         start_date = input.daterange()[0]
         end_date = input.daterange()[1]
-        df = df[(df["Date"] >= start_date) & (df["Date"] <= end_date)]
-        df["Date"] = df["Date"].apply(lambda x: x.strftime("%d.%m.%Y"))
+        df = df[(df["Created At"] >= start_date) & (df["Created At"] <= end_date)]
         return df
-
-    def _create_invoice_records(file_paths, status):
-        records = []
-        for invoice_path in file_paths:
-            parts = invoice_path.split("/")
-            name_parts = parts[-1].split("-")
-            date = datetime.date(
-                year=int(name_parts[0]), month=int(name_parts[1]), day=int(name_parts[2])
-            )
-            invoice_number = name_parts[3]
-            customer = name_parts[-1].replace(".html", "")
-            root_dir = config.get("paths").get("invoices_root_dir")
-            invoice_path = invoice_path.replace(root_dir, "")
-            records.append(
-                {
-                    "Date": date,
-                    "Invoice": invoice_number,
-                    "Status": status,
-                    "Customer": customer,
-                    "Link": ui.a("Download", href=invoice_path, target="_blank"),
-                }
-            )
-        return records
 
     @render.data_frame
     def invoice_list():
         """Render a list of filtered invoices"""
         df = get_filtered_invoices()
-        return render.DataGrid(df, selection_mode="rows", width="100%")
+        table = render.DataGrid(df, selection_mode="rows", width="100%", editable=True)
+        return table
+
+    def patch_table(patch):
+        """Apply edits to the table only if the fourth column 'Paid At' was changed"""
+        table_data = invoice_list.data()
+        if patch.get("column_index") != 3:
+            column_index = patch.get("column_index")
+            edited_column = table_data.columns[int(column_index)]
+            ui.notification_show(
+                "You can only edit the column 'Paid At'.",
+                type="warning",
+                duration=2,
+            )
+            return table_data[edited_column].iloc[patch.get("row_index")]
+        try:
+            Invoices = Query()
+            invoice_id = table_data.iloc[patch.get("row_index")]["Id"]
+            parsed_date = datetime.datetime.strptime(patch.get("value"), "%d.%m.%Y")
+            datastore.update(set("paid_at", parsed_date.strftime("%Y-%m-%d")), Invoices.id == invoice_id)
+        except Exception:
+            ui.notification_show(
+                "Error while updating invoice, please only use the date format '%d.%m.%Y'.",
+                type="error",
+                duration=6
+            )
+        return patch.get("value")
+
+    invoice_list.set_patch_fn(patch_table)
 
     @render.ui
     def selected_invoice():
@@ -125,7 +128,7 @@ def existing_invoices_server(input, output, session, config):
         if len(selection) > 0:
             selection = selection[0]
             df = get_filtered_invoices().iloc[selection]["Link"]
-            root_dir = Path(config.get("paths").get("invoices_root_dir"))
+            root_dir = Path(config.get("paths").get("invoices_dir"))
             with open(root_dir / df.attrs.get("href"), "r", encoding="utf8") as file:
                 html = file.read()
             return ui.HTML(html)

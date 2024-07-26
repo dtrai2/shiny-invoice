@@ -43,8 +43,8 @@ def run(config: Path, host: str, port: int):
 
     # pylint: disable=too-many-function-args
     app_ui = ui.page_navbar(
-        ui.nav_panel("Existing Invoices", existing_invoices_ui("existing_invoices")),
         ui.nav_panel("Create Invoice", new_invoice_ui("new_invoice", config)),
+        ui.nav_panel("Existing Invoices", existing_invoices_ui("existing_invoices")),
         ui.nav_panel("Configuration", config_ui("config")),
         title="Shiny Invoice",
         id="navbar_id",
@@ -60,7 +60,7 @@ def run(config: Path, host: str, port: int):
 
     # pylint: enable=redefined-builtin, unused-argument, no-value-for-parameter
 
-    app = App(app_ui, server, static_assets=config.get("paths").get("invoices_root_dir"))
+    app = App(app_ui, server, static_assets=config.get("paths").get("invoices_dir"))
     app.run(host=host, port=port)
 
 

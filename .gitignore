@@ -28,3 +28,4 @@ MANIFEST
 config.yaml
 invoice_template.html
 invoices
+datastore.json
