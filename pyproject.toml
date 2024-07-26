@@ -47,4 +47,4 @@ shiny-invoice = "shiny_invoice.shiny_invoice:cli"
 
 [tool.black]
 line-length = 100
-target-version = ['py311']
+target-version = ['py312']

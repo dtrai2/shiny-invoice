@@ -7,6 +7,7 @@ from string import Template
 
 import pandas as pd
 from shiny import module, ui, render, reactive
+from tinydb import TinyDB, Query
 
 
 @module.ui
@@ -17,7 +18,7 @@ def new_invoice_ui(config):
     return ui.layout_column_wrap(
         ui.card(
             ui.card_header("Invoice Details"),
-            ui.input_text(id="invoice_number", label="Invoice Number", value="1", width="100%"),
+            ui.output_ui(id="invoice_number_ui", width="100%"),
             ui.input_date(id="created_at_date", label="Created At", width="100%"),
             ui.output_ui(id="due_date_ui", width="100%"),
             ui.input_text(
@@ -51,7 +52,9 @@ def new_invoice_ui(config):
 
 
 @module.server
-def new_invoice_server(input, output, session, config):
+def new_invoice_server(input, _, __, config):
+    """Contains the Shiny Server for creating new invoices"""
+    datastore = TinyDB(config.get("paths").get("datastore"))
 
     with open(Path(config.get("paths").get("html_template")), "r", encoding="utf8") as file:
         html_template = Template(file.read())
@@ -74,6 +77,17 @@ def new_invoice_server(input, output, session, config):
         return items[last_column].sum()
 
     @render.ui
+    def invoice_number_ui():
+        invoice_ids = [int(invoice.get("Id")) for invoice in datastore.all()]
+        next_id = 1
+        if invoice_ids:
+            next_id = max(invoice_ids) + 1
+        number_ui = ui.input_text(
+            id="invoice_number", label="Invoice Number", value=str(next_id), width="100%"
+        )
+        return number_ui
+
+    @render.ui
     def due_date_ui():
         payment_terms_days = config.get("company").get("payment_terms_days")
         due_date = input.created_at_date() + datetime.timedelta(days=payment_terms_days)
@@ -83,11 +97,35 @@ def new_invoice_server(input, output, session, config):
     def customer_name():
         return input.recipient_address().split("\n")[0]
 
+    @reactive.effect
+    @reactive.event(input.invoice_number)
+    def already_existing_id_modal():
+        query = Query()
+        already_existing = datastore.search(query.Id == input.invoice_number())
+        if already_existing:
+            ui.notification_show(
+                "This invoice already exists. Please choose another invoice number.",
+                type="error",
+                duration=2,
+            )
+
     @render.download(
-        filename=lambda: f"{input.created_at_date()}-{input.invoice_number()}-{customer_name()}.html",
+        filename=lambda: f"{input.invoice_number()}.html",
     )
     def download_button():
         """Download the currently created invoice"""
+        datastore.insert(
+            {
+                "Id": input.invoice_number(),
+                "Created At": str(input.created_at_date()),
+                "Due Date": str(input.due_date()),
+                "Paid At": "Unpaid",
+                "Customer": customer_name(),
+            }
+        )
+        ui.notification_show(
+            "Reload page to update 'Existing Invoices' view.", type="message", duration=None
+        )
         with io.BytesIO() as buf:
             buf.write(render_invoice().encode("utf8"))
             yield buf.getvalue()

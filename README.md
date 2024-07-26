@@ -17,10 +17,9 @@ A suitable example looks like this:
 
 ```yaml
 paths:
-  invoices_root_dir: /home/user/invoices/  # must be an absolute path, and it needs to end with /
-  invoices_dir_paid: paid
-  invoices_dir_unpaid: open
+  invoices_dir: /home/user/invoices/  # must be an absolute path, and it needs to end with /
   html_template: shiny_invoice/default_invoice_template.html
+  datastore: datastore.json
 company:  # here you can specify details of your company
   name: Company Name
   skills:
@@ -65,18 +64,18 @@ shiny-invoice run --help
 
 ## Workflow
 
-This application manages the invoices as plain html files, which then can be turned into pdfs via the 
-browsers print functionality. 
-According to the configuration invoices can be separated into paid/unpaid directories.
-Based on that they will be also categorised inside the ui.
-The application does not offer ways to move or change files, this has to be done manually. 
-The filename also needs to follow a specific pattern which is 
-`<CREATED_AT_DATE>-<INVOICE_NUMBER>-<CUSTOMERNAME>.html`
+This application manages the invoices as plain html files, named by the invoice id. 
+To turn the html file into a pdf just use the browsers print functionality. 
+All the data corresponding to the invoices is stored inside a json file, which is configured with the key
+`paths.datastore`.
+The json you can edit as you like, via the gui it is only possible to change the 'Paid At' value.
+This value is also used to determine if in invoice is indeed 'Paid' or 'Unpaid'. 
 
 ## Impressions
+
+### View of creating a new invoice
+![new-invoice.png](docs/new-invoice.png)
 
 ### View of existing invoices
 ![existing-invoices.png](docs/existing-invoices.png)
 
-### View of creating a new invoice
-![new-invoice.png](docs/new-invoice.png)
