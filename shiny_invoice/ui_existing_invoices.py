@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pandas as pd
 from shiny import module, ui, render, reactive
-from tinydb import TinyDB, Query
-from tinydb.operations import set
+from tinydb import TinyDB, Query  # pylint: disable=import-error
+from tinydb.operations import set as db_set  # pylint: disable=import-error
 
 
 @module.ui
@@ -117,7 +117,7 @@ def existing_invoices_server(input, _, __, config):
             invoice_id = table_data.iloc[patch.get("row_index")]["Id"]
             parsed_date = datetime.datetime.strptime(patch.get("value"), "%d.%m.%Y")
             datastore.update(
-                set("Paid At", parsed_date.strftime("%Y-%m-%d")), query.Id == invoice_id
+                db_set("Paid At", parsed_date.strftime("%Y-%m-%d")), query.Id == invoice_id
             )
         except Exception:  # pylint: disable=broad-exception-caught
             ui.notification_show(
