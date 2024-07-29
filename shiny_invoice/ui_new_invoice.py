@@ -22,7 +22,10 @@ def new_invoice_ui(config):
             ui.input_date(id="created_at_date", label="Created At", width="100%"),
             ui.output_ui(id="due_date_ui", width="100%"),
             ui.input_text(
-                id="introduction", label="Introduction", value="Dear Sir or Madam,", width="100%"
+                id="introduction",
+                label="Introduction",
+                value=invoice_defaults.get("introduction"),
+                width="100%",
             ),
             ui.input_text_area(
                 id="recipient_address",
