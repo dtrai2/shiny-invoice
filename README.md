@@ -12,13 +12,13 @@ To run `shiny-invoice` you need install it with:
 pip install shiny-invoice
 ```
 
-Once `shiny-invoice` is installed you need to create configuration file. 
+Once `shiny-invoice` is installed you need to create configuration file.
 A suitable example looks like this:
 
 ```yaml
 paths:
   invoices_dir: /home/user/invoices/  # must be an absolute path, and it needs to end with /
-  html_template: shiny_invoice/default_invoice_template.html
+  html_template: shiny_invoice/templates/default_en.html
   datastore: datastore.json
 company:  # here you can specify details of your company
   name: Company Name
@@ -40,6 +40,7 @@ company:  # here you can specify details of your company
   tax_rate: 0.19
   payment_terms_days: 14
 invoice_defaults:  # here you can set defaults, which will be used to prefill the invoice formular
+  introduction: Dear Sir or Madam,
   recipient: |-
     Comp 2
     Compstreet Comp
@@ -52,24 +53,24 @@ invoice_defaults:  # here you can set defaults, which will be used to prefill th
 Once everything is set up you can run `shiny-invoice` with:
 
 ```bash
-shiny-invoice run --config config.yaml 
+shiny-invoice run --config config.yaml
 ```
 
 More information you can find with
 
 ```bash
 shiny-invoice --help
-shiny-invoice run --help 
+shiny-invoice run --help
 ```
 
 ## Workflow
 
-This application manages the invoices as plain html files, named by the invoice id. 
-To turn the html file into a pdf just use the browsers print functionality. 
+This application manages the invoices as plain html files, named by the invoice id.
+To turn the html file into a pdf just use the browsers print functionality.
 All the data corresponding to the invoices is stored inside a json file, which is configured with the key
 `paths.datastore`.
 The json you can edit as you like, via the gui it is only possible to change the 'Paid At' value.
-This value is also used to determine if in invoice is indeed 'Paid' or 'Unpaid'. 
+This value is also used to determine if in invoice is indeed 'Paid' or 'Unpaid'.
 
 ## Impressions
 
@@ -78,4 +79,3 @@ This value is also used to determine if in invoice is indeed 'Paid' or 'Unpaid'.
 
 ### View of existing invoices
 ![existing-invoices.png](docs/existing-invoices.png)
-
