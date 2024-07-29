@@ -33,7 +33,8 @@ dependencies = [
   "click",
   "ruamel.yaml",
   "pandas",
-  "pydantic"
+  "pydantic",
+  "tinydb"
 ]
 
 [project.optional-dependencies]
