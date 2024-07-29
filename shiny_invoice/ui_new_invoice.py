@@ -13,7 +13,7 @@ from tinydb import TinyDB, Query
 @module.ui
 def new_invoice_ui(config):
     """Defines the shiny ui for new invoices"""
-    invoice_defaults = config.get("invoice_defaults")
+    invoice_defaults = config.invoice_defaults
 
     return ui.layout_column_wrap(
         ui.card(
@@ -24,13 +24,13 @@ def new_invoice_ui(config):
             ui.input_text(
                 id="introduction",
                 label="Introduction",
-                value=invoice_defaults.get("introduction"),
+                value=invoice_defaults.introduction,
                 width="100%",
             ),
             ui.input_text_area(
                 id="recipient_address",
                 label="Recipient Address",
-                value=invoice_defaults.get("recipient"),
+                value=invoice_defaults.recipient,
                 rows=3,
                 width="100%",
             ),
@@ -38,7 +38,7 @@ def new_invoice_ui(config):
                 ui.input_text_area(
                     id="invoice_items",
                     label="Invoice Items",
-                    value=invoice_defaults.get("items"),
+                    value=invoice_defaults.items,
                     rows=6,
                     width="100%",
                     spellcheck=True,
@@ -57,9 +57,9 @@ def new_invoice_ui(config):
 @module.server
 def new_invoice_server(input, _, __, config):
     """Contains the Shiny Server for creating new invoices"""
-    datastore = TinyDB(config.get("paths").get("datastore"))
+    datastore = TinyDB(config.paths.datastore)
 
-    with open(Path(config.get("paths").get("html_template")), "r", encoding="utf8") as file:
+    with open(Path(config.paths.html_template), "r", encoding="utf8") as file:
         html_template = Template(file.read())
 
     @reactive.calc
@@ -92,7 +92,7 @@ def new_invoice_server(input, _, __, config):
 
     @render.ui
     def due_date_ui():
-        payment_terms_days = config.get("company").get("payment_terms_days")
+        payment_terms_days = config.company.payment_terms_days
         due_date = input.created_at_date() + datetime.timedelta(days=payment_terms_days)
         return ui.input_date("due_date", "Due date", value=str(due_date), width="100%")
 
@@ -136,22 +136,22 @@ def new_invoice_server(input, _, __, config):
     @reactive.calc
     def render_invoice():
         total_net = calculate_totals()
-        company = config.get("company")
-        tax = total_net * float(company.get("tax_rate"))
+        company = config.company
+        tax = total_net * float(company.tax_rate)
         total_gross = total_net + tax
         substitutions = {
-            "name": company.get("name"),
-            "primary_skills": " | ".join(company.get("skills")[:2]),
-            "all_skills": "<br/>".join(company.get("skills")),
-            "piped_address": " | ".join(company.get("address")),
-            "linebreaked_address": "<br/>".join(company.get("address")),
-            "primary_contact": "<br/>".join(company.get("contact")[:2]),
-            "bank": company.get("bank").get("name"),
-            "iban": company.get("bank").get("iban"),
-            "bic": company.get("bank").get("bic"),
-            "tax_number": company.get("bank").get("tax_number"),
-            "tax_rate": f"{float(company.get('tax_rate')) * 100}%",
-            "all_contact": "<br/>".join(company.get("contact")),
+            "name": company.name,
+            "primary_skills": " | ".join(company.skills[:2]),
+            "all_skills": "<br/>".join(company.skills),
+            "piped_address": " | ".join(company.address),
+            "linebreaked_address": "<br/>".join(company.address),
+            "primary_contact": "<br/>".join(company.contact[:2]),
+            "bank": company.bank.name,
+            "iban": company.bank.iban,
+            "bic": company.bank.bic,
+            "tax_number": company.bank.tax_number,
+            "tax_rate": f"{float(company.tax_rate) * 100}%",
+            "all_contact": "<br/>".join(company.contact),
             "invoice_number": input.invoice_number(),
             "created_at_date": input.created_at_date().strftime("%d.%m.%Y"),
             "due_at_date": input.due_date().strftime("%d.%m.%Y"),

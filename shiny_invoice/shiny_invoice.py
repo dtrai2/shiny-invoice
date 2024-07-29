@@ -4,12 +4,15 @@ This module acts as the entrypoint, containing the main navigational layout and 
 as well as the cli.
 """
 
+import sys
 from pathlib import Path
 
 import click
+from pydantic import ValidationError
 from ruamel.yaml import YAML
 from shiny import App, Inputs, Outputs, Session, ui
 
+from shiny_invoice.config import Config
 from shiny_invoice.ui_config import config_ui, config_server
 from shiny_invoice.ui_existing_invoices import existing_invoices_ui, existing_invoices_server
 from shiny_invoice.ui_new_invoice import new_invoice_ui, new_invoice_server
@@ -20,6 +23,13 @@ yaml = YAML(typ="rt", pure=True)
 @click.group(name="shiny-invoice")
 def cli():
     """Shiny Invoice CLI"""
+
+
+@cli.command(short_help="Generate default config")
+def generate_default_config():
+    """Generate a yaml file with the default configuration for shiny-invoice"""
+    with open("default_config.yaml", "w", encoding="utf8") as f:
+        yaml.dump(Config().model_dump(), f)
 
 
 @cli.command(short_help="Run Shiny Invoice")
@@ -39,7 +49,11 @@ def run(config: Path, host: str, port: int):
     """Run shiny invoice"""
     with open(config, "r", encoding="utf8") as file:
         config_str = file.read()
-    config = yaml.load(config_str)
+    try:
+        config: Config = Config(**yaml.load(config_str))
+    except ValidationError as e:
+        print(e.errors())
+        sys.exit(-1)
 
     # pylint: disable=too-many-function-args
     app_ui = ui.page_navbar(
@@ -60,7 +74,7 @@ def run(config: Path, host: str, port: int):
 
     # pylint: enable=redefined-builtin, unused-argument, no-value-for-parameter
 
-    app = App(app_ui, server, static_assets=config.get("paths").get("invoices_dir"))
+    app = App(app_ui, server, static_assets=config.paths.invoices_dir)
     app.run(host=host, port=port)
 
 

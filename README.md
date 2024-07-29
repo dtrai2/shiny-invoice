@@ -13,47 +13,15 @@ pip install shiny-invoice
 ```
 
 Once `shiny-invoice` is installed you need to create configuration file.
-A suitable example looks like this:
-
-```yaml
-paths:
-  invoices_dir: /home/user/invoices/  # must be an absolute path, and it needs to end with /
-  html_template: shiny_invoice/templates/default_en.html
-  datastore: datastore.json
-company:  # here you can specify details of your company
-  name: Company Name
-  skills:
-    - Primary Skill
-    - Secondary Skill
-  address:
-    - Address line 1
-    - 4234 Addresline2
-  contact:
-    - contact@shinyinvoice.de
-    - +49 123 456789
-    - shinyinvoice.de
-  bank:
-    name: SomeBank
-    iban: DE12 1234 5678 9100 00
-    bic: BICCCCCCC
-    tax_number: 11/2222/3333
-  tax_rate: 0.19
-  payment_terms_days: 14
-invoice_defaults:  # here you can set defaults, which will be used to prefill the invoice formular
-  introduction: Dear Sir or Madam,
-  recipient: |-
-    Comp 2
-    Compstreet Comp
-    1335 Compvill
-  items: |
-    Services, Hours, Rate, Price
-    Service 1, 40h, 100 €, 4.000 €
+A suitable default configuration can be generated with
+```bash
+shiny-invoice generate-default-config
 ```
 
 Once everything is set up you can run `shiny-invoice` with:
 
 ```bash
-shiny-invoice run --config config.yaml
+shiny-invoice run --config default_config.yaml
 ```
 
 More information you can find with

@@ -49,7 +49,7 @@ def existing_invoices_ui():
 def existing_invoices_server(input, _, __, config):
     """Contains the Shiny Server for existing invoices"""
 
-    datastore = TinyDB(config.get("paths").get("datastore"))
+    datastore = TinyDB(config.paths.datastore)
 
     @reactive.calc
     def get_filtered_invoices() -> pd.DataFrame | str:
@@ -136,7 +136,7 @@ def existing_invoices_server(input, _, __, config):
         if len(selection) > 0:
             selection = selection[0]
             df = get_filtered_invoices().iloc[selection]["Link"]
-            root_dir = Path(config.get("paths").get("invoices_dir"))
+            root_dir = Path(config.paths.invoices_dir)
             with open(root_dir / df.attrs.get("href"), "r", encoding="utf8") as file:
                 html = file.read()
             return ui.HTML(html)

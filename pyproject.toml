@@ -32,7 +32,8 @@ dependencies = [
   "shiny",
   "click",
   "ruamel.yaml",
-  "pandas"
+  "pandas",
+  "pydantic"
 ]
 
 [project.optional-dependencies]
