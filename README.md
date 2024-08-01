@@ -33,7 +33,7 @@ shiny-invoice --help
 shiny-invoice run --help
 ```
 
-## With Container
+### With Container
 
 Execute the following line in a directory that has the `config.yaml` file.
 ```bash
