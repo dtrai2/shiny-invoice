@@ -60,5 +60,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ IMAGE_ID }}:${{ VERSION }}
-            ${{ IMAGE_ID }}:latest
+            ${{ env.IMAGE_ID }}:${{ env.VERSION }}
+            ${{ env.IMAGE_ID }}:latest
