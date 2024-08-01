@@ -31,25 +31,3 @@ jobs:
       - name: lint changed and added files
         run: |
           pylint --rcfile=.pylintrc --fail-under 9 shiny_invoice/
-
-  build-container:
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - name: Log in to registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build images
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/shiny_invoice:${{ github.ref_name }}
-            ghcr.io/${{ github.repository_owner }}/shiny_invoice:latest
