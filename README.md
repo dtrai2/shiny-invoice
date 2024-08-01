@@ -6,6 +6,8 @@ It is not meant to be published online and used as an enterprise tool.
 
 ## Run
 
+### With Python
+
 To run `shiny-invoice` you need install it with:
 
 ```bash
@@ -29,6 +31,14 @@ More information you can find with
 ```bash
 shiny-invoice --help
 shiny-invoice run --help
+```
+
+## With Container
+
+Execute the following line in a directory that has the `config.yaml` file.
+```bash
+podman pull ghcr.io/dtrai2/shiny_invoice:latest
+podman run -p 8000:8000 --volume .:/home/app -ti --rm shiny_invoice:latest run --config config.yaml
 ```
 
 ## Workflow
