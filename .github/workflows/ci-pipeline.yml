@@ -54,11 +54,13 @@ jobs:
           [ "$VERSION" == "main" ] && VERSION=latest
           echo "IMAGE_ID=$IMAGE_ID" >> "GITHUB_ENV"
           echo "VERSION=$VERSION" >> "GITHUB_ENV"
+          echo $IMAGE_ID
+          echo $VERSION
       - name: Build images
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
-            ${{ env.IMAGE_ID }}:${{ env.VERSION }}
-            ${{ env.IMAGE_ID }}:latest
+            $IMAGE_ID:$VERSION
+            $IMAGE_ID:latest
