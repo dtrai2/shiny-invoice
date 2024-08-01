@@ -46,21 +46,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Image & Version String
+        id: image_version
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/shiny_invoice
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           VERSION=$(echo "${{ github.ref  }}" | sed -e 's,.*/\(.*\),\1,')
           [[ "${{ github.ref  }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           [ "$VERSION" == "main" ] && VERSION=latest
-          echo "IMAGE_ID=$IMAGE_ID" >> "GITHUB_ENV"
-          echo "VERSION=$VERSION" >> "GITHUB_ENV"
+          echo "image_id=$IMAGE_ID" >> "GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "GITHUB_OUTPUT"
           echo $IMAGE_ID
           echo $VERSION
       - name: Build images
         uses: docker/build-push-action@v5
         env:
-          IMAGE_ID: ${{ env.IMAGE_ID }}
-          VERSION: ${{ env.VERSION }}
+          IMAGE_ID: ${{ steps.image_version.outputs.image_id }}
+          VERSION: ${{ steps.image_version.outputs.version }}
         with:
           context: .
           push: true
