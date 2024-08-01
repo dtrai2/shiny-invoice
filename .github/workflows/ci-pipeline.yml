@@ -58,6 +58,9 @@ jobs:
           echo $VERSION
       - name: Build images
         uses: docker/build-push-action@v5
+        env:
+          IMAGE_ID: ${{ env.IMAGE_ID }}
+          VERSION: ${{ env.VERSION }}
         with:
           context: .
           push: true
