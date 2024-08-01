@@ -52,8 +52,8 @@ jobs:
           VERSION=$(echo "${{ github.ref  }}" | sed -e 's,.*/\(.*\),\1,')
           [[ "${{ github.ref  }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           [ "$VERSION" == "main" ] && VERSION=latest
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
+          echo "IMAGE_ID=$IMAGE_ID" >> "GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "GITHUB_ENV"
       - name: Build images
         uses: docker/build-push-action@v5
         with:
