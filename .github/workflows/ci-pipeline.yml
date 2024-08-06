@@ -38,8 +38,8 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - linux/amd64
-          - linux/arm64
+          - amd64
+          - arm64
     env:
       REGISTRY_IMAGE: shiny_invoice
     permissions:
@@ -48,7 +48,7 @@ jobs:
     steps:
       - name: Prepare
         run: |
-          platform=${{ matrix.platform }}
+          platform=linux/${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
       - uses: actions/checkout@v4
       - name: Docker meta
@@ -71,10 +71,10 @@ jobs:
         with:
           context: .
           push: true
-          platforms: ${{ matrix.platform }}
+          platforms: linux/${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
 #           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ env.REGISTRY_IMAGE }}:dev1
+            ghcr.io/${{ github.repository_owner }}/${{ env.REGISTRY_IMAGE }}:${{ matrix.platform }}-dev
 #            ghcr.io/${{ github.repository_owner }}/${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}
 #            ghcr.io/${{ github.repository_owner }}/${{ env.REGISTRY_IMAGE }}:latest
