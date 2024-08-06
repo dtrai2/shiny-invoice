@@ -12,7 +12,7 @@ LABEL authors="dtrai2"
 
 WORKDIR /home/app/
 COPY --from=compiler /opt/venv /opt/venv
-COPY shiny_invoice/templates /home/app/templates
+COPY shiny_invoice/templates/ /home/app/templates/
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE 8000
 ENTRYPOINT ["shiny-invoice"]
